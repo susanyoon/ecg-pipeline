@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecg-pipeline"
+version = "0.1.0"
+description = "End-to-end ECG signal pipeline: ingestion, processing, ML, and API over PTB-XL clinical data"
+requires-python = ">=3.10"
+dependencies = [
+    "wfdb",
+    "numpy",
+    "scipy",
+    "pandas",
+    "scikit-learn",
+    "psycopg[binary]",
+    "sqlalchemy",
+    "python-dotenv",
+    "fastapi[standard]",
+    "streamlit",
+    "matplotlib",
+    "typer",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest=9.1.1",
+    "ruff=0.16.1",
+]
+
+[project.scripts]
+ecg = "ecg.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["ecg*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "SIM", "UP"]
