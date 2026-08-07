@@ -1,11 +1,31 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import psycopg
 from dotenv import load_dotenv
 
 load_dotenv()
+
+SCHEMA_PATH = Path(__file__).parent / "schema.sql"
+
+
+def init_schema(conn: psycopg.Connection | None = None) -> None:
+    """
+    Create tables & indexes from schema.sql (idempotent).
+    """
+    sql = SCHEMA_PATH.read_text()
+    own = conn is None
+    if own:
+        conn = connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+        conn.commit()
+    finally:
+        if own:
+            conn.close()
 
 
 def get_connection_string() -> str:
