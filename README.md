@@ -27,7 +27,7 @@ An end-to-end pipeline over the PTB-XL clinical ECG dataset: ingests 12-lead ECG
 - [x] Dockerized PostgreSQL database
 - [x] Normalized clinical schema (patients, recordings, multi-label diagnoses)
 - [x] ETL pipeline: metadata ingestion with label aggregation
-- [ ] Signal processing and feature extraction
+- [x] Signal processing and feature extraction
 - [ ] Baseline ML classifier with honest evaluation
 - [ ] REST API
 - [ ] Clinical-facing dashboard

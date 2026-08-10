@@ -8,7 +8,7 @@ import wfdb
 DATA_ROOT = Path("data/ptbxl")
 
 
-def load_signla(filename_lr: str) -> tuple[np.ndarray, dict]:
+def load_signal(filename_lr: str) -> tuple[np.ndarray, dict]:
     """
     Load 1 ECG record's waveform via WFDB.
 
