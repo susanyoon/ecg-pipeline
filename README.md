@@ -32,6 +32,10 @@ An end-to-end pipeline over the PTB-XL clinical ECG dataset: ingests 12-lead ECG
 - [ ] REST API
 - [ ] Clinical-facing dashboard
 
+## Pipeline
+
+Raw 12-lead waveforms are bandpass-filtered (0.5-40 Hz), R-peaks detected on lead II, and interpretable features extracted per record - heart rate, mean RR interval, and heart-rate variability. Extracted heart rates fall in the expected physiological range, validating the signal chain end to end.
+
 ## Data
 
 Uses [PTB-XL](https://physionet.org/content/ptb-xl/), a public dataset of
