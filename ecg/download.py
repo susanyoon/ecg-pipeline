@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import urllib.request
 from pathlib import Path
 
@@ -27,19 +28,52 @@ def download_metadata(dest: Path = DATA_DIR) -> None:
     print("Metadata download complete.")
 
 
-def download_signals(record_paths: list[str], dest: Path = DATA_DIR) -> None:
+def download_signals(
+    record_paths: list[str],
+    dest: Path = DATA_DIR,
+    retries: int = 3,
+    pause: float = 0.05,
+) -> tuple[int, int]:
     """
-    Download specific WFDB signal records from PhysioNet.
+    Download WFDB signal records individually, tolerating transient failures.
 
-    Args:
-        record_paths: filename_lr values, e.g. "records100/00000/00001_lr".
+    PhysioNet occasionally closes connections during bulk downloads, so each
+    record is retried and failures are skipped rather than aborting the run.
+
+    Returns:
+        (downloaded, failed) counts.
     """
     dest.mkdir(parents=True, exist_ok=True)
-    # wfdb wants record names relative to the Database, w/o extension.
-    records = [p for p in record_paths]
-    wfdb.dl_database(
-        "ptb-xl",
-        dl_dir=str(dest),
-        records=records,
-        keep_subdirs=True,
-    )
+    downloaded = 0
+    failed = 0
+
+    for i, rec in enumerate(record_paths, start=1):
+        target = dest / f"{rec}.dat"
+        if target.exists():
+            downloaded += 1
+            continue
+
+        for attempt in range(retries):
+            try:
+                wfdb.dl_files(
+                    "ptb-xl",
+                    dl_dir=str(dest),
+                    files=[f"{rec}.hea", f"{rec}.dat"],
+                    keep_subdirs=True,
+                )
+                downloaded += 1
+                break
+            except Exception:
+                if attempt == retries - 1:
+                    failed += 1
+                else:
+                    time.sleep(2**attempt)  # back off: 1s, 2s, 4s
+        time.sleep(pause)
+
+        if i % 100 == 0:
+            print(
+                f"  {i}/{len(record_paths)} processed "
+                f"({downloaded} ok, {failed} failed)"
+            )
+
+    return downloaded, failed
