@@ -2,10 +2,12 @@
 
 ![CI](https://github.com/susanyoon/ecg-pipeline/actions/workflows/ci.yml/badge.svg)
 
-An end-to-end pipeline over the PTB-XL clinical ECG dataset: ingests 12-lead ECG recordings & metadata, stores them in a normalized PostgreSQL database, extracts interpretable signal features, and trains a baseline classifier with honest evaluation. API and dashboard in progress.
+An end-to-end pipeline over the PTB-XL clinical ECG dataset: ingests 12-lead ECG recordings & metadata, stores them in a normalized PostgreSQL database, extracts interpretable signal features, and trains a baseline classifier with honest evaluation, and serves everything through a REST API and clinical dashboard.
 
 > **Note:** This is an engineering demonstration, not a medical device or
 > diagnostic tool. Nothing here is validated for clinical use.
+
+![Dashboard](docs/dashboard_screenshot.png)
 
 ## Tech Stack
 
@@ -29,8 +31,8 @@ An end-to-end pipeline over the PTB-XL clinical ECG dataset: ingests 12-lead ECG
 - [x] ETL pipeline: metadata ingestion with label aggregation
 - [x] Signal processing and feature extraction
 - [x] Baseline ML classifier with honest evaluation
-- [ ] REST API
-- [ ] Clinical-facing dashboard
+- [x] REST API
+- [x] Clinical-facing dashboard
 
 ## Pipeline
 
@@ -86,3 +88,42 @@ alarms.
 **Next steps** this baseline points to: morphological features (ST-segment
 deviation, QRS width, T-wave amplitude), or a model over the raw waveform —
 both of which would target the information the current features can't see.
+
+## Installation
+
+```bash
+git clone https://github.com/susanyoon/ecg-pipeline.git
+cd ecg-pipeline
+pip install -e ".[dev]"
+cp .env.example .env
+docker compose up -d
+```
+
+## Usage
+
+```bash
+python -c "from ecg.download import download_metadata; download_metadata()"
+ecg initdb                      # create the schema
+ecg ingest --max-records 21799                      # load metadata, patients, labels
+ecg fetch-signals --limit 1500  # download waveforms from PhysioNet
+ecg extract --limit 1500        # filter signals, extract features
+ecg train                       # train and evaluate the classifier
+```
+
+Run the API:
+
+```bash
+fastapi dev ecg/api.py          # docs at http://127.0.0.1:8000/docs
+```
+
+Run the dashboard:
+
+```bash
+streamlit run dashboard.py      # opens at http://localhost:8501
+```
+
+## API
+
+A FastAPI service exposes the same data over HTTP, with interactive docs:
+
+![API docs](docs/api_screenshot.png)
